@@ -11,14 +11,13 @@ namespace Commerce.EntityLayer.Models
         public required string Password { get; set; }
         public string? Name { get; set; }
         public string? TelNo { get; set; }
-        public DateOnly Birthday { get; set; }
-
+        public DateOnly? Birthday { get; set; }
 
         public int GenderId { get; set; }
         public Gender? Gender { get; set; } //cinsiyeti optional tutup ya kadin ya erkek secilmesini sagliyoruz
         public int RoleId { get; set; }
-        public Role? Role { get; set; }
-        public List<Cart> Cart { get; set; }
+        public Role Role { get; set; }
+        public Cart Cart { get; set; }
         public List<Order> Order { get; set; }
         public List<Question> Questions { get; set; } = [];
         public List<Favourites> Favourites { get; set; }

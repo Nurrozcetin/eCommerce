@@ -6,6 +6,8 @@ namespace Commerce.EntityLayer.Models
     {
         [Key]
         public int RoleID { get; set; }
-        public string RoleName { get; set; }
+        public required string RoleName { get; set; }
+
+        public List<User> Users { get; set; } = new List<User>();
     }
 }

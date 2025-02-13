@@ -4,8 +4,9 @@ namespace Commerce.EntityLayer.Dtos
 {
     public class RegisterDto
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public Gender? Gender { get; set; }
+        public required string Email { get; set; }
+        public required string Password { get; set; }
+        public int? GenderId { get; set; }
+        public int? RoleId { get; set; }
     }
 }

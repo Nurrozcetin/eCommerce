@@ -48,6 +48,11 @@ namespace Commerce.DataAccessLayer
                 .HasForeignKey<Payment>(p => p.StatusID)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // role-user
+            modelBuilder.Entity<User>()
+              .Property(u => u.RoleId)
+              .HasDefaultValue(1); // Customer = 1
+
             base.OnModelCreating(modelBuilder);
         }
     }

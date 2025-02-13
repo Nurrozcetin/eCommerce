@@ -38,6 +38,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 //data access yerine direkt business layer direkt kullanilacak
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
