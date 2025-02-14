@@ -1,4 +1,5 @@
-﻿using Commerce.BusinessLayer;
+﻿using Azure.Core;
+using Commerce.BusinessLayer;
 using Commerce.EntityLayer;
 using Commerce.EntityLayer.Dtos;
 using Microsoft.AspNetCore.Authorization;

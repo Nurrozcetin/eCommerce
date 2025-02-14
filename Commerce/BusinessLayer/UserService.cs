@@ -136,5 +136,6 @@ namespace Commerce.BusinessLayer
 
             return "Kullanıcı bilgileri başarıyla güncellendi.";
         }
+
     }
 }
