@@ -18,7 +18,7 @@ namespace Commerce.DataAccessLayer
         public DbSet<PaymentMethod> PaymentMethod { get; set; }
         public DbSet<Status> Status { get; set; }
         public DbSet<Categories> Categories { get; set; }
-        public DbSet<ProductCategory> ProductCategories { get; set; } 
+        public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<ProductCart> ProductCart { get; set; }
         public DbSet<ProductSize> ProductSize { get; set; }
         public DbSet<ProductColor> ProductColor { get; set; }
@@ -34,7 +34,7 @@ namespace Commerce.DataAccessLayer
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // order-status
+            // order-status7 
             modelBuilder.Entity<Order>()
                 .HasOne(o => o.Status)
                 .WithOne(s => s.Order)

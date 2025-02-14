@@ -71,5 +71,23 @@ namespace Commerce.BusinessLayer
 
             return order;
         }
+
+        public async Task<List<Order>> GetAllOrderAsync(string email)
+        {
+            //kullaniciyi bul 
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+                throw new Exception("Kullanıcı bulunamadı");
+
+            return await _context.Order
+                .Where(o => o.UserID == user.Id) // Kullaniciya ait siparis bul
+                .OrderByDescending(o => o.CreatedAt) // Tarihe gore sirala 
+                .Include(o => o.OrderItems) // Siparis icerisindeki urunleri cek 
+                    .ThenInclude(oi => oi.Product) 
+                .ToListAsync(); //listele 
+        }
+
     }
-}
+} 

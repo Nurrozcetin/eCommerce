@@ -39,6 +39,17 @@ namespace Commerce.Controllers
             }
         }
 
+        [HttpGet("getOrder")]
+        public async Task<IActionResult> GetOrder()
+        {
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var orders = await _orderService.GetAllOrderAsync(userEmail);
+
+            if (orders == null)
+                return NotFound("Kullanıcıya ait sipariş bulunamadı");
+
+            return Ok(orders);
+        }
     }
     public class CreateOrderRequest
     {
