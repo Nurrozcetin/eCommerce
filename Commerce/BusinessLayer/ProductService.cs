@@ -13,6 +13,7 @@ namespace Commerce.BusinessLayer
         {
             _context = context;
         }
+        //kullanıcıların belli filtrelere göre arama yapmasını sağlar.
         public async Task<List<Product>> FilterProductsAsync(ProductFilterDto filterDto)
         {
             var query = _context.Product.AsQueryable();
@@ -24,7 +25,7 @@ namespace Commerce.BusinessLayer
 
             if (filterDto.CategoryId.HasValue)
             {
-                query = query.Where(product => product.Categories.Any(category => category.CategoryID == filterDto.CategoryId));
+                query = query.Where(product => product.ProductCategory.Any(category => category.CategoryId == filterDto.CategoryId));
             }
 
             if (filterDto.ColorId.HasValue)
@@ -58,6 +59,80 @@ namespace Commerce.BusinessLayer
             }
 
             return await query.ToListAsync();
+        }
+
+        //tüm ürünlerin belli nitelikleri de baz alınarak listelenmesini sağlar.
+        public async Task<List<ProductDto>> ListAllProductAsync()
+        {
+            //tüm ürünleri çek.
+            var products = await _context.Product 
+                .Include(product => product.Seller)
+                .ToListAsync();
+
+            //ürünlerin id sini, ismini, ürüne ait resimleri, fiyatı, stok sayısını, tarihini ve satıcısını çek.
+            var productDtoList = products.Select(product => new ProductDto
+            {
+                ProductID = product.ProductID,
+                ProductName = product.ProductName,
+                ProductImage = product.ProductImage,
+                Price = product.Price,
+                Stock = product.Stock, 
+                CreatedAt = product.CreatedAt, 
+                SellerName = product.Seller != null ? product.Seller.Name : "Bilinmiyor"
+            }).ToList();
+
+            //çekilen ürünleri listele.
+            return productDtoList;
+        }
+
+        //seçili ürüne ait belli niteliklerin görüntülenmesini sağlar.
+        public async Task<List<ProductDto>> ListProductAsync(int productId)
+        {
+            //parametre olarak alınan ürün id sine ait olan ürünü çek.
+            var product = await _context.Product 
+                .Where(p => p.ProductID == productId)
+                .Include(p => p.Seller)
+                .FirstOrDefaultAsync();
+
+            // ürün yoksa boş liste döndür.
+            if (product == null)
+                return new List<ProductDto>();
+
+            //girilen id ye ait ürünün id sini, ismini, ürüne ait resimleri, fiyatı, stok sayısını, tarihini ve satıcısını çek.
+            var productDtoList = new List<ProductDto>
+            {
+                new ProductDto
+                {
+                    ProductID = product.ProductID,
+                    ProductName = product.ProductName,
+                    ProductImage = product.ProductImage,
+                    Price = product.Price,
+                    Stock = product.Stock,
+                    CreatedAt = product.CreatedAt,
+                    SellerName = product.Seller != null ? product.Seller.Name : "Bilinmiyor"
+                }
+            };
+
+            //çekilen ürünü listele.
+            return productDtoList;
+        }
+
+        //belli kategoriye ait tüm ürünlerin listelenmesini sağlar.
+        public async Task<List<ProductDto>> ListProductByCategoryAsync(int categoryId)
+        {
+            //parametre olarak alınan kategori id sine uygun kategoriye sahip ürünlere ait ürün id sini, ismini, resimleri, fiyat bilgisini ve stok sayısını çek.
+            return await _context.ProductCategories
+               .Where(pc => pc.CategoryId == categoryId)
+               .Include(pc => pc.Product)
+               .Select(pc => new ProductDto
+               {
+                   ProductID = pc.Product.ProductID,
+                   ProductName = pc.Product.ProductName,
+                   ProductImage = pc.Product.ProductImage,
+                   Price = pc.Product.Price,
+                   Stock = pc.Product.Stock
+               })
+               .ToListAsync();
         }
     }
 }

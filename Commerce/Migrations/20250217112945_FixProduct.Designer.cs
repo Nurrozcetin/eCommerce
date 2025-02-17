@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Commerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250214092526_ProductFavouritesDate")]
-    partial class ProductFavouritesDate
+    [Migration("20250217112945_FixProduct")]
+    partial class FixProduct
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -59,9 +59,6 @@ namespace Commerce.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CartID"));
 
-                    b.Property<int>("ProductQuantity")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
@@ -85,12 +82,7 @@ namespace Commerce.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProductID")
-                        .HasColumnType("int");
-
                     b.HasKey("CategoryID");
-
-                    b.HasIndex("ProductID");
 
                     b.ToTable("Categories");
                 });
@@ -282,16 +274,16 @@ namespace Commerce.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SellerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Stock")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductID");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("SellerId");
 
                     b.ToTable("Product");
                 });
@@ -603,13 +595,6 @@ namespace Commerce.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Commerce.EntityLayer.Models.Categories", b =>
-                {
-                    b.HasOne("Commerce.EntityLayer.Models.Product", null)
-                        .WithMany("Categories")
-                        .HasForeignKey("ProductID");
-                });
-
             modelBuilder.Entity("Commerce.EntityLayer.Models.Favourites", b =>
                 {
                     b.HasOne("Commerce.EntityLayer.Models.User", "User")
@@ -688,9 +673,12 @@ namespace Commerce.Migrations
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.Product", b =>
                 {
-                    b.HasOne("Commerce.EntityLayer.Models.User", null)
+                    b.HasOne("Commerce.EntityLayer.Models.User", "Seller")
                         .WithMany("Products")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.ProductCart", b =>
@@ -865,8 +853,6 @@ namespace Commerce.Migrations
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.Product", b =>
                 {
-                    b.Navigation("Categories");
-
                     b.Navigation("OrderItem");
 
                     b.Navigation("ProductCart");

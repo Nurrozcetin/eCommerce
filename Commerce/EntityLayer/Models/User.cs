@@ -22,7 +22,7 @@ namespace Commerce.EntityLayer.Models
         public List<Question> Questions { get; set; } = [];
         public List<Favourites> Favourites { get; set; }
         public List<Rating> Ratings { get; set; } = [];
-        public List<Product>? Products { get; set; }
+        public List<Product>? Products { get; set; } = [];
         public List<Addresses> Addresses { get; set; } = [];
     }
 }

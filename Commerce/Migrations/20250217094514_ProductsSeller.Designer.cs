@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Commerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250214110741_CartQuantity")]
-    partial class CartQuantity
+    [Migration("20250217094514_ProductsSeller")]
+    partial class ProductsSeller
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -279,16 +279,16 @@ namespace Commerce.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SellerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Stock")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductID");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("SellerId");
 
                     b.ToTable("Product");
                 });
@@ -685,9 +685,12 @@ namespace Commerce.Migrations
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.Product", b =>
                 {
-                    b.HasOne("Commerce.EntityLayer.Models.User", null)
+                    b.HasOne("Commerce.EntityLayer.Models.User", "Seller")
                         .WithMany("Products")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.ProductCart", b =>

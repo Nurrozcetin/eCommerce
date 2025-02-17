@@ -53,6 +53,13 @@ namespace Commerce.DataAccessLayer
               .Property(u => u.RoleId)
               .HasDefaultValue(1); // Customer = 1
 
+            //product-seller
+            modelBuilder.Entity<Product>()
+               .HasOne(p => p.Seller)
+               .WithMany(u => u.Products)
+               .HasForeignKey(p => p.SellerId)
+               .OnDelete(DeleteBehavior.SetNull);
+
             base.OnModelCreating(modelBuilder);
         }
     }

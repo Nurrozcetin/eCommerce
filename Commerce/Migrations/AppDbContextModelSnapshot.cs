@@ -79,12 +79,7 @@ namespace Commerce.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProductID")
-                        .HasColumnType("int");
-
                     b.HasKey("CategoryID");
-
-                    b.HasIndex("ProductID");
 
                     b.ToTable("Categories");
                 });
@@ -276,16 +271,16 @@ namespace Commerce.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SellerId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Stock")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductID");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("SellerId");
 
                     b.ToTable("Product");
                 });
@@ -597,13 +592,6 @@ namespace Commerce.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Commerce.EntityLayer.Models.Categories", b =>
-                {
-                    b.HasOne("Commerce.EntityLayer.Models.Product", null)
-                        .WithMany("Categories")
-                        .HasForeignKey("ProductID");
-                });
-
             modelBuilder.Entity("Commerce.EntityLayer.Models.Favourites", b =>
                 {
                     b.HasOne("Commerce.EntityLayer.Models.User", "User")
@@ -682,9 +670,12 @@ namespace Commerce.Migrations
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.Product", b =>
                 {
-                    b.HasOne("Commerce.EntityLayer.Models.User", null)
+                    b.HasOne("Commerce.EntityLayer.Models.User", "Seller")
                         .WithMany("Products")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Seller");
                 });
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.ProductCart", b =>
@@ -859,8 +850,6 @@ namespace Commerce.Migrations
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.Product", b =>
                 {
-                    b.Navigation("Categories");
-
                     b.Navigation("OrderItem");
 
                     b.Navigation("ProductCart");
