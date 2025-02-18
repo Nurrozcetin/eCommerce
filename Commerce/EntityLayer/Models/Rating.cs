@@ -6,11 +6,16 @@ namespace Commerce.EntityLayer.Models
     {
         [Key]
         public int RateID { get; set; }
-        public required string Comment { get; set; }
+
+        [Range(1, 5, ErrorMessage = "Puan 1 ile 5 arasında olmalıdır.")]
+        public int Score { get; set; }
+        public string? Comment { get; set; }
         public DateOnly CreatedAt { get; set; }
-        public Size? Size { get; set; }
 
         public int UserID { get; set; }
         public User User { get; set; }
+
+        public int ProductID { get; set; }
+        public Product Product { get; set; }
     }
 }

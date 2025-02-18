@@ -12,7 +12,6 @@ namespace Commerce.EntityLayer.Models
         public string? Name { get; set; }
         public string? TelNo { get; set; }
         public DateOnly? Birthday { get; set; }
-
         public int GenderId { get; set; }
         public Gender? Gender { get; set; } //cinsiyeti optional tutup ya kadin ya erkek secilmesini sagliyoruz
         public int RoleId { get; set; }

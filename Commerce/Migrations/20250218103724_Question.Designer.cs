@@ -4,6 +4,7 @@ using Commerce.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Commerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250218103724_Question")]
+    partial class Question
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -461,15 +464,13 @@ namespace Commerce.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RateID"));
 
                     b.Property<string>("Comment")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateOnly>("CreatedAt")
                         .HasColumnType("date");
 
-                    b.Property<int>("ProductID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Score")
+                    b.Property<int?>("SizeID")
                         .HasColumnType("int");
 
                     b.Property<int>("UserID")
@@ -477,7 +478,7 @@ namespace Commerce.Migrations
 
                     b.HasKey("RateID");
 
-                    b.HasIndex("ProductID");
+                    b.HasIndex("SizeID");
 
                     b.HasIndex("UserID");
 
@@ -801,11 +802,9 @@ namespace Commerce.Migrations
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.Rating", b =>
                 {
-                    b.HasOne("Commerce.EntityLayer.Models.Product", "Product")
-                        .WithMany("Ratings")
-                        .HasForeignKey("ProductID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Commerce.EntityLayer.Models.Size", "Size")
+                        .WithMany()
+                        .HasForeignKey("SizeID");
 
                     b.HasOne("Commerce.EntityLayer.Models.User", "User")
                         .WithMany("Ratings")
@@ -813,7 +812,7 @@ namespace Commerce.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("Size");
 
                     b.Navigation("User");
                 });
@@ -878,8 +877,6 @@ namespace Commerce.Migrations
                     b.Navigation("ProductFavourites");
 
                     b.Navigation("ProductSizes");
-
-                    b.Navigation("Ratings");
                 });
 
             modelBuilder.Entity("Commerce.EntityLayer.Models.Role", b =>

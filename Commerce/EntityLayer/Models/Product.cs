@@ -22,5 +22,6 @@ namespace Commerce.EntityLayer.Models
         public List<ProductColor> ProductColors { get; set; } = [];
         public List<ProductCategory> ProductCategory { get; set; } = [];
         public List<ProductFavourites> ProductFavourites { get; set; } = [];
+        public List<Rating> Ratings { get; set; } = [];
     }
 }

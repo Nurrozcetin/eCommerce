@@ -9,9 +9,12 @@ namespace Commerce.EntityLayer.Models
         public int QuestionID { get; set; }
         public required string Questions { get; set; }
         public required string Answer { get; set; }
-        public DateOnly Date { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public int UserID { get; set; }
+        public int UserID { get; set; } //soru soran kullanici id si
         public User User { get; set; }
+
+        public int ProductID { get; set; } //hangi urunle ilgili soru soruluyor 
+        public Product Product { get; set; }
     }
 }

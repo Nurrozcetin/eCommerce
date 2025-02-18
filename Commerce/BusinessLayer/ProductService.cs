@@ -13,6 +13,7 @@ namespace Commerce.BusinessLayer
         {
             _context = context;
         }
+
         //kullanıcıların belli filtrelere göre arama yapmasını sağlar.
         public async Task<List<Product>> FilterProductsAsync(ProductFilterDto filterDto)
         {
@@ -133,6 +134,118 @@ namespace Commerce.BusinessLayer
                    Stock = pc.Product.Stock
                })
                .ToListAsync();
+        }
+
+        //kullanicinin ilgili urunle ilgii soru sorabilmesini saglar.
+        public async Task<string> AskQuestionAsync(AskDto askDto, string userEmail)
+        {
+            //girilen urun id sine ait urunu bul.
+            var product = await _context.Product.FindAsync(askDto.ProductId);
+            if(product == null)
+                return "Ürün bulunamadı";
+
+            //soru soracak kullaniciyi bul.
+            var users = await _context.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
+            if (users == null)
+                return "Kullanıcı bulunamadı";
+
+            //sonra girilen soru metnini Question tablosuna diger bilgilerle ekle.
+            var question = new Question
+            {
+                UserID = users.Id,
+                ProductID = askDto.ProductId,
+                Questions = askDto.Content,
+                Answer = "",
+                CreatedAt = DateTime.UtcNow,
+            };
+            _context.Question.Add(question);
+            await _context.SaveChangesAsync();
+            return "Sorunuz başarıyla satıcıya iletildi";
+        }
+
+        //saticinin ilgili urune ait tum sorulari verilmisse cevaplari goruntuleyebilmesini saglar.
+        public async Task<List<AskDto>> GetQuestionBySellerAsync(int productId)
+        {
+            //parametre olarak alinan urun id sine uygun sekilde sorulan sorular ve cevaplari liste halinde goruntulenir.
+            var questions = await _context.Question
+                .Where(question => question.Product.ProductID == productId)
+                .Include(question => question.Product)
+                .Select(question => new AskDto
+                {
+                    UserId = question.UserID,
+                    QuestionId = question.QuestionID,
+                    ProductId = question.ProductID,
+                    Content = question.Questions,
+                    Answers = question.Answer,
+                    CreatedAt = question.CreatedAt
+                }).ToListAsync();
+
+            return questions;
+        }
+
+        //saticinin ilgili urune ait cevap verebilmesini saglar.
+        public async Task<string> AnswerQuestionAsync(AskDto askDto, string userEmail)
+        {
+            //saticinin sorulan sorulara cevap verebilmesi icin kullaniciyi bul.
+            var users = await _context.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
+            if (users == null)
+                return "Kullanıcı bulunamadı.";
+
+            //cevaplanacak soruyu bul.
+            var question = await _context.Question
+                .FirstOrDefaultAsync(q => q.QuestionID == askDto.QuestionId && q.Product.SellerId == users.Id);
+
+            if (question == null)
+                return "Bu ürüne ait soru bulunamadı ya da bu soruya cevap verme yetkiniz yok.";
+
+            // Cevabı güncelle
+            question.Answer = askDto.Answers;
+            question.CreatedAt = DateTime.UtcNow;
+
+            _context.Question.Update(question);
+            await _context.SaveChangesAsync();
+
+            return "Cevabınız başarıyla kaydedildi.";
+        }
+
+        //kullanicinin belli bir urun hakkinda degerlendirme yapabilmesini saglar.
+        public async Task<string> RateAsync(RateDto rateDto, string userEmail)
+        {
+            //email ile degerlendirilecek kullaniciyi bul.
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            if (user == null)
+                return "Kullanıcı bulunamadı.";
+
+            //degerlendirilecek urunu bul.
+            var product = await _context.Product.FirstOrDefaultAsync(p => p.ProductID == rateDto.ProductId);
+            if (product == null)
+                return "Ürün bulunamadı.";
+
+            //degerlendirmeyi gelen verilerle tabloya gir.
+            var rating = new Rating
+            {
+                UserID = user.Id,
+                ProductID = rateDto.ProductId,
+                Score = rateDto.Score,
+                Comment = rateDto.Comment,
+                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
+            };
+
+            //bilgileri kaydet
+            await _context.Rating.AddAsync(rating);
+            await _context.SaveChangesAsync();
+
+            return "Değerlendirmeniz başarıyla kaydedildi.";
+        }
+
+        //belli bir urune ait tum degerlendirmeleri listeler.
+        public async Task<List<Rating>> GetRateByProductAsync(int productId)
+        {
+            //Rating tablosundan ilgili productId ye ait urunun degerlendirmesini liste halinde dondur.
+            return await _context.Rating
+                .Where(r => r.ProductID == productId)
+                .Include(r => r.User)
+                .ToListAsync();
         }
     }
 }
