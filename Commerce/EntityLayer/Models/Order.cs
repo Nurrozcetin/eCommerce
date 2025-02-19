@@ -16,9 +16,11 @@ namespace Commerce.EntityLayer.Models
 
         public List<OrderItem> OrderItems { get; set; } = [];
 
-        public int StatusID { get; set; }
+        public int StatusID { get; set; } = 1;
         public Status Status { get; set; }
 
         public Payment Payment { get; set; }
+
+        public DateTime DeliveryDate { get; set; }
     }
 }

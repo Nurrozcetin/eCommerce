@@ -6,12 +6,10 @@ namespace Commerce.EntityLayer.Models
     {
         [Key]
         public int StatusID { get; set; }
-
         [Required]
         public string StatusName { get; set; }
-
         public Order Order { get; set; }
-
+        public OrderItem OrderItem { get; set; }
         public Payment Payment { get; set; }
 
     }

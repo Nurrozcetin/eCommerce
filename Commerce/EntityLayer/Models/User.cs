@@ -15,7 +15,7 @@ namespace Commerce.EntityLayer.Models
         public int GenderId { get; set; }
         public Gender? Gender { get; set; } //cinsiyeti optional tutup ya kadin ya erkek secilmesini sagliyoruz
         public int RoleId { get; set; }
-        public Role Role { get; set; }
+        public Role Role { get; set; } 
         public Cart Cart { get; set; }
         public List<Order> Order { get; set; }
         public List<Question> Questions { get; set; } = [];

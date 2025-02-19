@@ -16,4 +16,4 @@ namespace Commerce.BusinessLayer
         Task<string> RateAsync(RateDto rateDto, string userEmail); //kullanicinin belli bir urun hakkinda degerlendirme yapabilmesini saglar.
         Task<List<Rating>> GetRateByProductAsync(int productId); //belli bir urune ait tum degerlendirmeleri listeler.
     }
-}
+} 

@@ -16,5 +16,8 @@ namespace Commerce.EntityLayer.Models
 
         public int ProductID { get; set; }
         public Product Product { get; set; }
+
+        public int StatusID { get; set; } = 1;
+        public Status Status { get; set; }
     }
 }
