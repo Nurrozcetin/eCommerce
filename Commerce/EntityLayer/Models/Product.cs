@@ -10,9 +10,9 @@ namespace Commerce.EntityLayer.Models
         public int ProductID { get; set; }
         public required string ProductName { get; set; }
         public required string ProductImage { get; set; }
-        public required string Price { get; set; }
-        public required string Stock { get; set; }
-        public DateOnly CreatedAt { get; set; }
+        public required decimal Price { get; set; }
+        public required int Stock { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         public int? SellerId { get; set; }
         public User Seller { get; set; }

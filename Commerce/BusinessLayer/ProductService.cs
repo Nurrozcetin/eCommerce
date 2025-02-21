@@ -41,12 +41,12 @@ namespace Commerce.BusinessLayer
 
             if (filterDto.MinPrice.HasValue)
             {
-                query = query.Where(product => decimal.Parse(product.Price) >= filterDto.MinPrice);
+                query = query.Where(product => product.Price >= filterDto.MinPrice);
             }
 
             if (filterDto.MaxPrice.HasValue)
             {
-                query = query.Where(product => decimal.Parse(product.Price) <= filterDto.MaxPrice);
+                query = query.Where(product => product.Price <= filterDto.MaxPrice);
             }
 
             if (filterDto.MinStock.HasValue)

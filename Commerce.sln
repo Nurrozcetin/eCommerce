@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35303.130
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commerce", "Commerce\Commerce.csproj", "{C893D3F4-9C47-46C4-9C46-C0C89B4C1BD5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commerce", "Commerce\Commerce.csproj", "{C893D3F4-9C47-46C4-9C46-C0C89B4C1BD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commerce.Client", "Commerce.Client\Commerce.Client.csproj", "{59FF8EC6-724B-40D5-9110-5B47F1189E3F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Commerce.Client", "Commerce.Client\Commerce.Client.csproj", "{59FF8EC6-724B-40D5-9110-5B47F1189E3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

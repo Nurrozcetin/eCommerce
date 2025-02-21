@@ -1,0 +1,35 @@
+﻿@* @page "/product"
+@inject HttpClient Http
+@using Commerce.Client
+
+<h3>Product</h3>
+
+@if(products == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <ul>
+        @foreach(var product in products)
+        {
+            <li>@product.ProductName - @product.Price ₺</li>
+        }
+    </ul>
+}
+
+@code {
+    private List<ProductModel> products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await Http.GetFromJsonAsync<List<ProductModel>>("api/product");
+    }
+
+    public class ProductModel
+    {
+        public string ProductName { get; set; }
+        public decimal Price { get; set; }
+    }
+}
+ *@

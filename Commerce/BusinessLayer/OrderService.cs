@@ -3,7 +3,6 @@ using Commerce.DataAccessLayer;
 using Commerce.EntityLayer.Dtos;
 using Commerce.EntityLayer.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Commerce.BusinessLayer
 {
@@ -38,7 +37,7 @@ namespace Commerce.BusinessLayer
             {
                 UserID = user.Id,
                 CreatedAt = DateTime.UtcNow,
-                TotalPrice = cartItems.Sum(ci => ci.Quantity * decimal.Parse(ci.Product.Price)),
+                TotalPrice = cartItems.Sum(ci => ci.Quantity * ci.Product.Price),
                 StatusID = 1
             };
 
@@ -51,7 +50,7 @@ namespace Commerce.BusinessLayer
                 OrderID = order.OrderID,
                 ProductID = ci.ProductID,
                 Quantity = ci.Quantity,
-                Price = decimal.Parse(ci.Product.Price)
+                Price = ci.Product.Price
             }).ToList();
 
             _context.OrderItem.AddRange(orderItems);

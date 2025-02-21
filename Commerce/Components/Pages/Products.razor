@@ -1,0 +1,70 @@
+﻿@page "/product"
+@inject HttpClient Http
+
+@using System.Text.Json
+
+<PageTitle>Product</PageTitle>
+
+<h1>Product</h1>
+
+@if (products == null)
+{
+    <p>Loading...</p>
+}
+else if (products.Count == 0)
+{
+    <p>Ürün bulunamadı.</p>
+}
+else
+{
+    <ul>
+        @foreach (var product in products)
+        {
+            <li>@product.ProductName - @product.Price ₺</li>
+        }
+    </ul>
+}
+
+@code {
+    private List<Product> products = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // API çağrısı yapıp JSON verisini string olarak alalım
+            var json = await Http.GetStringAsync("https://localhost:7232/api/product");
+
+            // JSON içindeki $values kısmını al ve listeye çevir
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var values = root.GetProperty("$values").EnumerateArray();
+
+            products = values.Select(v => new Product
+                {
+                    ProductID = v.GetProperty("productID").GetInt32(),
+                    ProductName = v.GetProperty("productName").GetString() ?? "Bilinmeyen",
+                    ProductImage = v.GetProperty("productImage").GetString() ?? "",
+                    Price = v.GetProperty("price").GetDecimal(),
+                    Stock = v.GetProperty("stock").GetInt32(),
+                    CreatedAt = v.GetProperty("createdAt").GetDateTime(),
+                    SellerName = v.GetProperty("sellerName").GetString()
+                }).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Hata oluştu: " + ex.Message);
+        }
+    }
+
+    public class Product
+    {
+        public int ProductID { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string ProductImage { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string? SellerName { get; set; }
+    }
+}
