@@ -18,6 +18,8 @@ namespace Commerce.DataAccessLayer
         public DbSet<PaymentMethod> PaymentMethod { get; set; }
         public DbSet<Status> Status { get; set; }
         public DbSet<Categories> Categories { get; set; }
+        public DbSet<Campaign> Campaign { get; set; }
+        public DbSet<ProductCampaign> ProductCampaign { get; set; }
         public DbSet<ProductCategory> ProductCategories { get; set; }
         public DbSet<ProductCart> ProductCart { get; set; }
         public DbSet<ProductSize> ProductSize { get; set; }

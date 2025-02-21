@@ -247,5 +247,89 @@ namespace Commerce.BusinessLayer
                 .Include(r => r.User)
                 .ToListAsync();
         }
+
+        //saticinin urununu istedigi kampanyayla eslestirmesini saglar.
+        public async Task<bool> AssignProductToCampaign(int productId, string campaignName, string userEmail)
+        {
+            //kullanici satici mi 
+            var user = await _context.Users
+             .Include(u => u.Role)
+             .FirstOrDefaultAsync(u => u.Email == userEmail);
+
+            if (user == null)
+            {
+                throw new KeyNotFoundException("Kullanıcı bulunamadı.");
+            }
+
+            // 2️ Rolünü kontrol et
+            if (user.RoleId != 2) // Eğer role 2 değilse yetkisiz
+            {
+                throw new UnauthorizedAccessException("Bu işlemi yapmak için yetkiniz yok.");
+            }
+
+            //urun secilir
+            var product = await _context.Product
+                .Include(p => p.ProductCampaign)
+                .FirstOrDefaultAsync(p => p.ProductID == productId);
+
+            if (product == null)
+            {
+                throw new KeyNotFoundException("Ürün bulunamadı.");
+            }
+
+            //kampanya secilir
+            var campaign = await _context.Campaign
+                .FirstOrDefaultAsync(c => c.CampaignName == campaignName);
+
+            if (campaign == null)
+            {
+                throw new KeyNotFoundException("Kampanya bulunamadı.");
+            }
+
+            // Eğer ürün zaten bu kampanyaya ekliyse tekrar ekleme
+            if (product.ProductCampaign.Any(pc => pc.CampaignID == campaign.CampaignID))
+            {
+                throw new InvalidOperationException("Ürün zaten bu kampanyaya eklenmiş.");
+            }
+
+            var productCampaign = new ProductCampaign
+            {
+                ProductID = productId,
+                CampaignID = campaign.CampaignID
+            };
+
+            //urunleri ve secilen kampanyayi db ye ekle
+            _context.ProductCampaign.Add(productCampaign);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+        public async Task<List<ProductDto>> GetProductsByCampaign(string campaignName)
+        {
+            //secili kampanyayi bul
+            var campaign = await _context.Campaign
+                .FirstOrDefaultAsync(c => c.CampaignName == campaignName);
+
+            if (campaign == null)
+            {
+                throw new KeyNotFoundException("Kampanya bulunamadı.");
+            }
+
+            //o kampanyaya ozgu urunleri bul
+            var products = await _context.ProductCampaign
+                .Where(pc => pc.CampaignID == campaign.CampaignID)
+                .Select(pc => new ProductDto
+                {
+                    ProductID = pc.Product.ProductID,
+                    ProductName = pc.Product.ProductName,
+                    ProductImage = pc.Product.ProductImage,
+                    Price = pc.Product.Price,
+                    Stock = pc.Product.Stock
+                })
+                .ToListAsync();
+
+            //urunleri dondur
+            return products;
+        }
     }
 }

@@ -23,5 +23,6 @@ namespace Commerce.EntityLayer.Models
         public List<ProductCategory> ProductCategory { get; set; } = [];
         public List<ProductFavourites> ProductFavourites { get; set; } = [];
         public List<Rating> Ratings { get; set; } = [];
+        public List<ProductCampaign> ProductCampaign { get; set; } = []; 
     }
 }

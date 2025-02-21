@@ -15,5 +15,7 @@ namespace Commerce.BusinessLayer
         Task<string> AnswerQuestionAsync(AskDto askDto, string email); //saticinin sorulan soruya cevap vermesini saglar.
         Task<string> RateAsync(RateDto rateDto, string userEmail); //kullanicinin belli bir urun hakkinda degerlendirme yapabilmesini saglar.
         Task<List<Rating>> GetRateByProductAsync(int productId); //belli bir urune ait tum degerlendirmeleri listeler.
+        Task<bool> AssignProductToCampaign(int productId, string campaignName, string userEmail); //saticinin urununu istedigi kampanyayla eslestirmesini saglar.
+        Task<List<ProductDto>> GetProductsByCampaign(string campaignName); //kampanyaya ozgu tum urunleri cek.
     }
 } 

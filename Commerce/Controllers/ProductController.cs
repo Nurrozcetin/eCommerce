@@ -130,5 +130,62 @@ namespace Commerce.Controllers
 
             return Ok(ratings);
         }
+
+        //saticinin urununu istedigi kampanyayla eslestirmesini saglar
+        [Authorize]
+        [HttpPost("assignCampaign/{productId}")]
+        public async Task<IActionResult> AssignProductToCampaign(int productId, [FromBody] AssignCampaignRequest request)
+        {
+            try
+            {
+                // Kullanıcının rolünü token üzerinden al
+                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+
+                //ilgili fonksiyona yonlendir
+                bool result = await _productService.AssignProductToCampaign(productId, request.CampaignName, userEmail);
+
+                if (result)
+                    return Ok(new { message = "Ürün başarıyla kampanyaya eklendi." });
+
+                return BadRequest(new { message = "Ürün kampanyaya eklenemedi." });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        //secili kampanyaya ozgu tum urunleri cek
+        [HttpPost("getCampaign")]
+        public async Task<IActionResult> GetProductsByCampaign([FromBody] AssignCampaignRequest request)
+        {
+            try
+            {
+                //ilgili fonksiyona yonlendir ve donusu products degiskeninde tut.
+                var products = await _productService.GetProductsByCampaign(request.CampaignName);
+
+                if (products.Count == 0)
+                    return NotFound(new { message = "Bu kampanyaya ait ürün bulunamadı." });
+
+                return Ok(products);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+    }
+    public class AssignCampaignRequest
+    {
+        public required string CampaignName { get; set; }
     }
 }
