@@ -68,6 +68,7 @@ namespace Commerce.BusinessLayer
             //tüm ürünleri çek.
             var products = await _context.Product 
                 .Include(product => product.Seller)
+                .Include(p => p.Ratings)
                 .ToListAsync();
 
             //ürünlerin id sini, ismini, ürüne ait resimleri, fiyatı, stok sayısını, tarihini ve satıcısını çek.
@@ -79,7 +80,9 @@ namespace Commerce.BusinessLayer
                 Price = product.Price,
                 Stock = product.Stock, 
                 CreatedAt = product.CreatedAt, 
-                SellerName = product.Seller != null ? product.Seller.Name : "Bilinmiyor"
+                SellerName = product.Seller != null ? product.Seller.Name : "Bilinmiyor",
+                AverageRating = product.Ratings.Any() ? product.Ratings.Average(r => r.Score) : 0,
+                RatingsCount = product.Ratings.Count
             }).ToList();
 
             //çekilen ürünleri listele.

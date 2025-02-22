@@ -11,6 +11,8 @@ namespace Commerce.EntityLayer.Dtos
         public int? Stock { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? SellerName { get; set; }
+        public double AverageRating { get; set; }
+        public int RatingsCount { get; set; }
     }
 }
 

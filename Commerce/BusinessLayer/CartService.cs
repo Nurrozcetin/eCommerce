@@ -99,6 +99,5 @@ namespace Commerce.BusinessLayer
             // Değişiklikleri kaydet
             await _context.SaveChangesAsync();
         }
-
     }
 }

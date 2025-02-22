@@ -138,7 +138,7 @@ namespace Commerce.Controllers
         {
             try
             {
-                // Kullanıcının rolünü token üzerinden al
+                // Kullanıcının emailini token üzerinden al
                 var userEmail = User.FindFirstValue(ClaimTypes.Email);
 
                 //ilgili fonksiyona yonlendir
@@ -182,7 +182,6 @@ namespace Commerce.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
-
     }
     public class AssignCampaignRequest
     {
