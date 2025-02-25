@@ -28,13 +28,15 @@ namespace Commerce.Controllers
             try
             {
                 //siparis verecek kullaniciyi bul
-                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (userEmail == null)
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
                     return Unauthorized("Kullanıcı doğrulanamadı.");
+                }
 
                 //degiskenle birlikte ilgili fonksiyona yonlendir.
-                var order = await _orderService.CreateOrderAsync(userEmail, request.PaymentMethodId, request.AddressId);
+                var order = await _orderService.CreateOrderAsync(parsedUserId, request.PaymentMethodId, request.AddressId);
                 return Ok(order);
             }
             catch (Exception ex)
@@ -48,10 +50,15 @@ namespace Commerce.Controllers
         public async Task<IActionResult> GetOrder()
         {
             //siparis detaytlarini incelemek isteyen kullaniciyi bul.
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
 
             //degiskenle birlikte ilgili fonksiyona yonlendir.
-            var orders = await _orderService.GetAllOrderAsync(userEmail);
+            var orders = await _orderService.GetAllOrderAsync(parsedUserId);
 
             if (orders == null)
                 return NotFound("Kullanıcıya ait sipariş bulunamadı");
@@ -64,10 +71,15 @@ namespace Commerce.Controllers
         public async Task<IActionResult> GetOrdersBySeller()
         {
             //satici bul.
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
 
             //siparis detaylarini goruntulemek icin fonksiyona yonlendir.
-            var orders = await _orderService.GetOrdersBySellerAsync(userEmail);
+            var orders = await _orderService.GetOrdersBySellerAsync(parsedUserId);
 
             if (orders == null)
                 return NotFound("Kullanıcıya ait sipariş bulunamadı");
@@ -82,13 +94,15 @@ namespace Commerce.Controllers
             try
             {
                 // Kullanıcı email adresini alıyoruz.
-                var userEmail = User.FindFirstValue(ClaimTypes.Email); 
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (string.IsNullOrEmpty(userEmail))
-                    return Unauthorized("Kullanıcı doğrulanamadı!");
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return Unauthorized("Kullanıcı doğrulanamadı.");
+                }
 
                 //boolean ifadeyle siparisin kargoya verilip verilmedigini ogrenip sonucu dondurur.
-                bool isShipped = await _orderService.ShipOrderAsync(userEmail, orderId);
+                bool isShipped = await _orderService.ShipOrderAsync(parsedUserId, orderId);
 
                 if (!isShipped)
                     return BadRequest("Sipariş kargoya verilemedi!");
@@ -108,13 +122,15 @@ namespace Commerce.Controllers
             try
             {
                 //iade isteyen kullaniciyi bul
-                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (string.IsNullOrEmpty(userEmail))
-                    return Unauthorized("Kullanıcı doğrulanamadı!");
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return Unauthorized("Kullanıcı doğrulanamadı.");
+                }
 
                 //urunun iade edilip edilmedigini ilgil fonksiyona yonlendirerek bul.
-                bool isReturned = await _orderService.ReturnOrderItemAsync(userEmail, orderItemId);
+                bool isReturned = await _orderService.ReturnOrderItemAsync(parsedUserId, orderItemId);
 
                 return Ok(isReturned);
             }
@@ -122,7 +138,7 @@ namespace Commerce.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
-        }
+        } 
     }
     public class CreateOrderRequest
     {

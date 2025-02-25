@@ -25,13 +25,15 @@ namespace Commerce.Controllers
             try
             {
                 //kullaniciyi mailiyle bul
-                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (userEmail == null)
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
                     return Unauthorized("Kullanıcı doğrulanamadı.");
+                }
 
                 //favouriteService deki fonksiyona yonlendir
-                await _favouriteService.AddProductToFavouritesAsync(userEmail, request.ProductId);
+                await _favouriteService.AddProductToFavouritesAsync(parsedUserId, request.ProductId);
                 return Ok(new { message = "Ürün favorilere eklendi." });
             }
             catch (Exception ex)
@@ -47,8 +49,14 @@ namespace Commerce.Controllers
         [HttpGet("getFavourite")]
         public async Task<IActionResult> GetFavourite()
         {
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            var favourite = await _favouriteService.GetFavouriteProductsAsync(userEmail);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
+
+            var favourite = await _favouriteService.GetFavouriteProductsAsync(parsedUserId);
 
             if (favourite == null)
                 return NotFound("Kullanıcıya ait favoriler bulunamadı");
@@ -60,10 +68,15 @@ namespace Commerce.Controllers
         public async Task<IActionResult> DeleteProductFavourites([FromBody] DeleteProductRequest request)
         {
             //kullaniciyi bul
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
 
             //secilen urunu service dosyasindaki silme fonksiyonuna yonlendir
-            await _favouriteService.DeleteProductFavouritesAsync(userEmail, request.ProductId);
+            await _favouriteService.DeleteProductFavouritesAsync(parsedUserId, request.ProductId);
             return Ok("Ürün favorilerden kaldırıldı");
         }
         public class DeleteProductRequest

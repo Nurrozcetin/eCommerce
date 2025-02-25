@@ -1,92 +1,22 @@
 ﻿using Commerce.DataAccessLayer;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using BCrypt.Net;
 using Commerce.EntityLayer.Models;
 using Commerce.EntityLayer.Dtos;
+using System.Text;
+using System.Security.Cryptography;
+using System.Runtime.Intrinsics.Arm;
 
 namespace Commerce.BusinessLayer
 {
     public class UserService : IUserService
     {
         private readonly AppDbContext _context; //data access i kaldirip tum db islemlerini de business de yapacagimiz icin dbcontext i buraya implemente ediyoruz
+        private readonly ITokenService _tokenService;
 
-        public UserService(AppDbContext context)
+        public UserService(AppDbContext context, ITokenService tokenService)
         {
             _context = context;
-        }
-
-        public async Task<string> RegisterAsync(string email, string password, int? genderId, int? roleId)
-        {
-            //epostayla kullanicinin varligi sorgulanir
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (existingUser != null)
-            {
-                return "Bu e-posta zaten kullanılıyor.";
-            }
-
-            // kullanici yoksa yeni sifreyi hashliyoruz
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
-
-            var user = new User
-            {
-                Email = email,
-                Password = hashedPassword,
-                GenderId = genderId ?? 3,
-                RoleId = roleId ?? 1
-            };
-
-            // kullaniciyi db ye ekliyoruz
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-
-            return "Kullanıcı başarıyla oluşturuldu!";
-        }
-
-        public async Task<User> LoginAsync(string email, string password)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null)
-                throw new Exception("Kullanıcı bulunamadı!");
-
-            if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-                throw new Exception("Şifre hatalı!");
-
-            return user;
-        }
-
-        public async Task<User> ValidateUserAsync(string email, string password)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
-
-            if (user == null)
-                throw new Exception("Kullanıcı bulunamadı!");
-            return user;
-        }
-
-        public async Task<ProfileDto> GetUserByEmailAsync(string email)
-        {
-            var user = await _context.Users
-                .Include(u => u.Role)
-                .Include(u => u.Gender)
-                .Include(u => u.Addresses)
-                .FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user == null)
-                throw new Exception("Bu maile kayıtlı bir kullanıcı bulunamadı");
-
-            var profileDto = new ProfileDto
-            {
-                Email = user.Email,
-                Name = user.Name ?? string.Empty,
-                TelNo = user.TelNo ?? string.Empty,
-                Birthday = user.Birthday,
-                Gender = user.Gender?.Name ?? string.Empty,
-                Role = user.Role?.RoleName ?? string.Empty,
-                Addresses = user.Addresses?.Select(a => a.Address ?? string.Empty).ToList() ?? new List<string>()
-            };
-
-            return profileDto;
+            _tokenService = tokenService;
         }
 
         public async Task<string> UpdateUserAsync(int userId, UpdateProfileDto updateProfileDto)
@@ -137,5 +67,111 @@ namespace Commerce.BusinessLayer
             return "Kullanıcı bilgileri başarıyla güncellendi.";
         }
 
+        public async Task<AuthResponseDto> RegisterAsync(int userId, string email, string password, int? genderId, int? roleId)
+        {
+            //id ile kullanicinin varligi sorgulanir
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            // kullanici yoksa yeni sifreyi hashliyoruz
+            string hashedPassword = HashPassword(password);
+
+            var user = new User
+            {
+                Email = email,
+                Password = hashedPassword,
+                GenderId = genderId ?? 3,
+                RoleId = roleId ?? 1
+            };
+
+            // kullaniciyi db ye ekliyoruz
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            var token = _tokenService.GenerateToken(user.Id);
+
+
+            return new AuthResponseDto
+            {
+                Id = userId,
+                Email = user.Email,
+                Token = token
+            };
+        }
+
+        public async Task<AuthResponseDto> LoginAsync(string email, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                throw new Exception("Kullanıcı bulunamadı!");
+            }
+
+            // Şifre doğrulaması
+            if (!VerifyPassword(password, user.Password))
+            {
+                throw new Exception("Şifre hatalı!");
+            }
+
+            // Kullanıcıya JWT token üret
+            var token = _tokenService.GenerateToken(user.Id);
+
+            return new AuthResponseDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Token = token
+            };
+        }
+
+        public async Task<User> ValidateUserAsync(int userId, string password)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId && u.Password == password);
+
+            if (user == null)
+                throw new Exception("Kullanıcı bulunamadı!");
+            return user;
+        }
+
+        public async Task<ProfileDto> GetUserByIdAsync(int userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Gender)
+                .Include(u => u.Addresses)
+                .FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                throw new Exception("Bu maile kayıtlı bir kullanıcı bulunamadı");
+
+            var profileDto = new ProfileDto
+            {
+                Email = user.Email,
+                Name = user.Name ?? string.Empty,
+                TelNo = user.TelNo ?? string.Empty,
+                Birthday = user.Birthday,
+                Gender = user.Gender?.Name ?? string.Empty,
+                Role = user.Role?.RoleName ?? string.Empty,
+                Addresses = user.Addresses?.Select(a => a.Address ?? string.Empty).ToList() ?? new List<string>()
+            };
+
+            return profileDto;
+        }
+
+        //kullanicinin girdigi sifreyi sha256 ile hashler
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var bytes = Encoding.UTF8.GetBytes(password);
+                var hash = sha256.ComputeHash(bytes);
+                return Convert.ToBase64String(hash);
+            }
+        }
+
+        private bool VerifyPassword(string enteredPassword, string storedHashedPassword)
+        {
+            string enteredHashed = HashPassword(enteredPassword);
+            return enteredHashed == storedHashedPassword;
+        }
     }
 }

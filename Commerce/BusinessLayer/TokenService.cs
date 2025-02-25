@@ -1,43 +1,61 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+﻿using Commerce.BusinessLayer;
+using System.Security.Cryptography;
 using System.Text;
 
-namespace Commerce.BusinessLayer
+public class TokenService : ITokenService
 {
-    public class TokenService : ITokenService
+    private readonly string _secretKey;
+    private readonly string _issuer;
+    private readonly string _audience;
+    private readonly int _expiryMinutes;
+
+    // Constructor üzerinden IConfiguration alıyoruz
+    public TokenService(IConfiguration configuration)
     {
-        private readonly string _secretKey;
-        private readonly string _issuer;
-        private readonly string _audience;
+        _secretKey = configuration["Jwt:Key"];  // appsettings.json'dan alınır
+        _issuer = configuration["Jwt:Issuer"];
+        _audience = configuration["Jwt:Audience"];
+        _expiryMinutes = int.Parse(configuration["Jwt:ExpiryMinutes"]);
+    }
 
-        public TokenService(IConfiguration configuration)
+    public string GenerateToken(int userId)
+    {
+        var header = new { alg = "HS256", typ = "JWT" };
+        string encodedHeader = Base64UrlEncode(System.Text.Json.JsonSerializer.Serialize(header));
+
+        var payload = new
         {
-            _secretKey = configuration["Jwt:Key"];
-            _issuer = configuration["Jwt:Issuer"];
-            _audience = configuration["Jwt:Audience"];
-        }
+            sub = userId.ToString(),
+            name = "username",
+            exp = DateTimeOffset.UtcNow.AddMinutes(_expiryMinutes).ToUnixTimeSeconds()  // ExpiryMinutes dinamik
+        };
+        string encodedPayload = Base64UrlEncode(System.Text.Json.JsonSerializer.Serialize(payload));
 
-        public string GenerateToken(string email)
+        string signature = CreateSignature($"{encodedHeader}.{encodedPayload}", _secretKey);
+
+        return $"{encodedHeader}.{encodedPayload}.{signature}";
+    }
+
+    private string Base64UrlEncode(byte[] bytes)
+    {
+        return Convert.ToBase64String(bytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
+
+    private string Base64UrlEncode(string input)
+    {
+        var bytes = Encoding.UTF8.GetBytes(input);
+        return Base64UrlEncode(bytes);
+    }
+
+    private string CreateSignature(string message, string secretKey)
+    {
+        using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey)))
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Name, email),
-                new Claim(ClaimTypes.Email, email)
-            };
-
-            var token = new JwtSecurityToken(
-                _issuer,
-                _audience,
-                claims,
-                expires: DateTime.Now.AddMinutes(60), 
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
+            return Base64UrlEncode(hash);
         }
     }
 }

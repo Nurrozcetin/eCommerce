@@ -12,13 +12,13 @@ namespace Commerce.BusinessLayer
         {
             _context = context;
         }
-        public async Task AddProductToFavouritesAsync(string email, int productId)
+        public async Task AddProductToFavouritesAsync(int userId, int productId)
         {
             //kullaniciyi bul
             var user = await _context.Users
                 .Include(userInfo => userInfo.Favourites)
                     .ThenInclude(fav => fav.ProductFavourites)
-                .FirstOrDefaultAsync(userInfo => userInfo.Email == email);
+                .FirstOrDefaultAsync(userInfo => userInfo.Id == userId);
 
             if (user == null)
                 throw new Exception("Kullanıcı bulunamadı");
@@ -50,14 +50,14 @@ namespace Commerce.BusinessLayer
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<Product>> GetFavouriteProductsAsync(string email)
+        public async Task<List<Product>> GetFavouriteProductsAsync(int userId)
         {
             //Favorilerine erisilecek kullaniciyi bul 
             var user = await _context.Users
              .Include(userInfo => userInfo.Favourites)
                  .ThenInclude(fav => fav.ProductFavourites)
                      .ThenInclude(productfav => productfav.Product)
-             .FirstOrDefaultAsync(userInfo => userInfo.Email == email);
+             .FirstOrDefaultAsync(userInfo => userInfo.Id == userId);
 
             if (user == null || user.Favourites == null)
                 throw new Exception("Favori ürün bulunamadı");
@@ -69,13 +69,13 @@ namespace Commerce.BusinessLayer
                 .ToList();
         }
 
-        public async Task DeleteProductFavouritesAsync(string email, int productId)
+        public async Task DeleteProductFavouritesAsync(int userId, int productId)
         {
             //kullaniciyi mail yoluyla bul
             var user = await _context.Users
                 .Include(u => u.Favourites)
                     .ThenInclude(f => f.ProductFavourites)
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new Exception("Kullanıcı bulunamadı");

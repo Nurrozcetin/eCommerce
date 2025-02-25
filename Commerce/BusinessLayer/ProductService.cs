@@ -140,7 +140,7 @@ namespace Commerce.BusinessLayer
         }
 
         //kullanicinin ilgili urunle ilgii soru sorabilmesini saglar.
-        public async Task<string> AskQuestionAsync(AskDto askDto, string userEmail)
+        public async Task<string> AskQuestionAsync(AskDto askDto, int userId)
         {
             //girilen urun id sine ait urunu bul.
             var product = await _context.Product.FindAsync(askDto.ProductId);
@@ -148,7 +148,7 @@ namespace Commerce.BusinessLayer
                 return "Ürün bulunamadı";
 
             //soru soracak kullaniciyi bul.
-            var users = await _context.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
+            var users = await _context.Users.FirstOrDefaultAsync(user => user.Id == userId);
             if (users == null)
                 return "Kullanıcı bulunamadı";
 
@@ -187,10 +187,10 @@ namespace Commerce.BusinessLayer
         }
 
         //saticinin ilgili urune ait cevap verebilmesini saglar.
-        public async Task<string> AnswerQuestionAsync(AskDto askDto, string userEmail)
+        public async Task<string> AnswerQuestionAsync(AskDto askDto, int userId)
         {
             //saticinin sorulan sorulara cevap verebilmesi icin kullaniciyi bul.
-            var users = await _context.Users.FirstOrDefaultAsync(user => user.Email == userEmail);
+            var users = await _context.Users.FirstOrDefaultAsync(user => user.Id == userId);
             if (users == null)
                 return "Kullanıcı bulunamadı.";
 
@@ -212,10 +212,10 @@ namespace Commerce.BusinessLayer
         }
 
         //kullanicinin belli bir urun hakkinda degerlendirme yapabilmesini saglar.
-        public async Task<string> RateAsync(RateDto rateDto, string userEmail)
+        public async Task<string> RateAsync(RateDto rateDto, int userId)
         {
             //email ile degerlendirilecek kullaniciyi bul.
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null)
                 return "Kullanıcı bulunamadı.";
 
@@ -252,12 +252,12 @@ namespace Commerce.BusinessLayer
         }
 
         //saticinin urununu istedigi kampanyayla eslestirmesini saglar.
-        public async Task<bool> AssignProductToCampaign(int productId, string campaignName, string userEmail)
+        public async Task<bool> AssignProductToCampaign(int productId, string campaignName, int userId)
         {
             //kullanici satici mi 
             var user = await _context.Users
              .Include(u => u.Role)
-             .FirstOrDefaultAsync(u => u.Email == userEmail);
+             .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {

@@ -25,13 +25,15 @@ namespace Commerce.Controllers
             try
             {
                 //kullaniciyi mailiyle bul
-                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (userEmail == null)
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
                     return Unauthorized("Kullanıcı doğrulanamadı.");
+                }
 
                 //favouriteService deki fonksiyona yonlendir
-                await _cartService.AddProductToCartAsync(userEmail, request.ProductId, request.Quantity);
+                await _cartService.AddProductToCartAsync(parsedUserId, request.ProductId, request.Quantity);
                 return Ok(new { message = "Ürün sepete eklendi." });
             }
             catch (Exception ex)
@@ -48,8 +50,14 @@ namespace Commerce.Controllers
         [HttpGet("getCart")]
         public async Task<IActionResult> GetCart()
         {
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            var cart = await _cartService.GetCartProductsAsync(userEmail);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
+
+            var cart = await _cartService.GetCartProductsAsync(parsedUserId);
 
             if (cart == null)
                 return NotFound("Kullanıcıya ait favoriler bulunamadı");
@@ -61,10 +69,15 @@ namespace Commerce.Controllers
         public async Task<IActionResult> DeleteProduct([FromBody] DeleteProductRequest request)
         {
             //kullaniciyi bul
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
 
             //secilen urunu service dosyasindaki silme fonksiyonuna yonlendir
-            await _cartService.DeleteProductCartAsync(userEmail, request.ProductId);
+            await _cartService.DeleteProductCartAsync(parsedUserId, request.ProductId);
             return Ok("Ürün kullanıcıya ait sepetten kaldırıldı");
         }
         public class DeleteProductRequest

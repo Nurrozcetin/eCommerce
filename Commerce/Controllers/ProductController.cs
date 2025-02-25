@@ -67,9 +67,15 @@ namespace Commerce.Controllers
         public async Task<IActionResult> AskQuestion([FromBody] AskDto askDto)
         {
             //soru soracak kullaniciyi bul.
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
+
             //result degiskeni adi altinda ilgili fonksiyona yonlendir ve sonucu dondur.
-            var result = await _productService.AskQuestionAsync(askDto, userEmail);
+            var result = await _productService.AskQuestionAsync(askDto, parsedUserId);
             if (result == null)
                 return NotFound("Ürün veya kullanıcı bulunamadı!");
 
@@ -95,9 +101,15 @@ namespace Commerce.Controllers
         public async Task<IActionResult> AnswerQuestion([FromBody] AskDto askDto)
         {
             //saticiyi bul.
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
+
             //result degiskeni adi altinda ilgili fonksiyona yonlendir ve sonucu dondur.
-            var result = await _productService.AnswerQuestionAsync(askDto, userEmail);
+            var result = await _productService.AnswerQuestionAsync(askDto, parsedUserId);
             if (result == null)
                 return NotFound("Soru doğru bir şekilde cevaplanamadı!");
 
@@ -109,13 +121,16 @@ namespace Commerce.Controllers
         [HttpPost("rate")]
         public async Task<IActionResult> AddRating([FromBody] RateDto rateDto)
         {
-            //email ile degerlendirme yapacak kullaniciyi al.
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            if (userEmail == null)
-                return Unauthorized("Kullanıcı doğrulaması yapılamadı.");
+            //degerlendirme yapacak kullaniciyi al.
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userId, out int parsedUserId))
+            {
+                return Unauthorized("Kullanıcı doğrulanamadı.");
+            }
 
             //result degiskeniyle fonksiyona yonlendir sonucu don.
-            var result = await _productService.RateAsync(rateDto, userEmail);
+            var result = await _productService.RateAsync(rateDto, parsedUserId);
             return Ok(result);
         }
 
@@ -139,10 +154,15 @@ namespace Commerce.Controllers
             try
             {
                 // Kullanıcının emailini token üzerinden al
-                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return Unauthorized("Kullanıcı doğrulanamadı.");
+                }
 
                 //ilgili fonksiyona yonlendir
-                bool result = await _productService.AssignProductToCampaign(productId, request.CampaignName, userEmail);
+                bool result = await _productService.AssignProductToCampaign(productId, request.CampaignName, parsedUserId);
 
                 if (result)
                     return Ok(new { message = "Ürün başarıyla kampanyaya eklendi." });

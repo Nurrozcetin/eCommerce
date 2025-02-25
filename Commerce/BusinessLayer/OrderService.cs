@@ -16,14 +16,14 @@ namespace Commerce.BusinessLayer
         }
 
         //kullanicinin sepetindeki urunleri siparis etmesini saglar.
-        public async Task<Order> CreateOrderAsync(string Email, int paymentMethodId, int addressId)
+        public async Task<Order> CreateOrderAsync(int userId, int paymentMethodId, int addressId)
         {
             //var olan kullaniciyi getiriyoruz
             var user = _context.Users.Include(u => u.Cart)
                              .ThenInclude(c => c.ProductCart)
                              .ThenInclude(pc => pc.Product)
                              //.ThenInclude(pc => pc.Seller)
-                             .FirstOrDefault(u => u.Email == Email);
+                             .FirstOrDefault(u => u.Id == userId);
 
             //kullanicinin sepetinde urun var mi onu kontrol ediyoruz
             if (user == null || user.Cart == null || user.Cart.ProductCart.Count == 0)
@@ -73,11 +73,11 @@ namespace Commerce.BusinessLayer
         }
 
         //kullanicinin kendi siparis ve detaylarini goruntuleyebilmesini saglar.
-        public async Task<List<Order>> GetAllOrderAsync(string email)
+        public async Task<List<Order>> GetAllOrderAsync(int userId)
         {
             //kullaniciyi bul 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new Exception("Kullanıcı bulunamadı");
@@ -91,11 +91,11 @@ namespace Commerce.BusinessLayer
         }
 
         //saticinin hangi musterinin hangi urunlerini siparis ettigini goruntulemeyi saglar.
-        public async Task<List<OrderDetailDto>> GetOrdersBySellerAsync(string email)
+        public async Task<List<OrderDetailDto>> GetOrdersBySellerAsync(int userId)
         {
             //satıcı bulunur.
             var seller = await _context.Users
-               .Where(u => u.Email == email)
+               .Where(u => u.Id == userId)
                .Select(u => u.Id)
                .FirstOrDefaultAsync();
 
@@ -119,11 +119,11 @@ namespace Commerce.BusinessLayer
         }
 
         //siparisin lojistik uzmanlarinca kargolanmasini saglar.
-        public async Task<bool> ShipOrderAsync(string email, int orderId)
+        public async Task<bool> ShipOrderAsync(int userId, int orderId)
         {
             var user = await _context.Users
                                     .Include(u => u.Role) // Kullanıcının rollerini almak için
-                                    .FirstOrDefaultAsync(u => u.Email == email);
+                                    .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new Exception("Kullanıcı bulunamadı!");
@@ -145,11 +145,11 @@ namespace Commerce.BusinessLayer
         }
 
         //musterinin siparis ettigi urunu iade edebilmesini saglar.
-        public async Task<bool> ReturnOrderItemAsync(string email, int orderItemId)
+        public async Task<bool> ReturnOrderItemAsync(int userId, int orderItemId)
         {
             //urunu iade edecek kullaniciyi bul.
             var user = await _context.Users
-        .       FirstOrDefaultAsync(u => u.Email == email);
+        .       FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new Exception("Kullanıcı bulunamadı!");

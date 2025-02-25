@@ -37,7 +37,7 @@ else
                         <span class="reviews">(@product.RatingsCount Değerlendirme)</span>
                     </div>
 
-                    <button class="add-to-cart">Sepete Ekle</button>
+                    <button class="add-to-cart" @onclick="() => AddProductToCart(product)">Sepete Ekle</button>
                 </div>
             </div>
         }
@@ -75,6 +75,45 @@ else
         {
             Console.WriteLine("Hata oluştu: " + ex.Message);
         }
+    }
+
+    //secili urunu sepete eklemek icin fonksiyon
+    private async Task AddProductToCart(Product product)
+    {
+        var addCartRequest = new AddCartRequest
+            {
+                ProductId = product.ProductID,
+                Quantity = 1 //default olarak bir tane adet eklenir
+            };
+
+        try
+        {
+            //ilgili apiye istek atilir
+            var response = await Http.PostAsJsonAsync("https://localhost:7232/api/cart/addCart", addCartRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                //sonuc json olarak donulur
+                var result = await response.Content.ReadFromJsonAsync<object>();
+                Console.WriteLine(result?.ToString());
+            }
+            else
+            {
+                var error = await response.Content.ReadFromJsonAsync<object>();
+                Console.WriteLine("Hata: " + error?.ToString());
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Hata oluştu: " + ex.Message);
+        }
+    }
+
+    //sepete ekleme icin atilan istek nesnesi
+    public class AddCartRequest
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
     }
 
     //product nesnesi modele uygun olacak şekilde yazılır. 

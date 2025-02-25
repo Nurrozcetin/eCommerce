@@ -1,7 +1,9 @@
-﻿namespace Commerce.BusinessLayer
+﻿using Microsoft.IdentityModel.Tokens;
+
+namespace Commerce.BusinessLayer
 {
     public interface ITokenService
     {
-        string GenerateToken(string email);
+        string GenerateToken(int userId);
     }
 }

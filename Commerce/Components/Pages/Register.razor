@@ -1,0 +1,119 @@
+﻿@page "/register"
+@layout Commerce.Components.Layout.EmptyLayout
+@inject NavigationManager Navigation
+
+<div class="min-h-screen bg-gray-100 flex items-center justify-center">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-4xl flex">
+        <!-- Sol taraf - Form -->
+        <div class="flex-1 pr-8">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">Lotus</h1>
+                <h2 class="text-xl font-semibold text-gray-700">Create an account</h2>
+                <p class="text-gray-500">Sign up and start shopping</p>
+            </div>
+
+            <EditForm Model="@registerModel" OnValidSubmit="@HandleRegistration">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <InputText @bind-Value="registerModel.Email" class="mt-1 w-full rounded-lg border border-gray-300 p-2" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                        <InputText type="password" @bind-Value="registerModel.Password" class="mt-1 w-full rounded-lg border border-gray-300 p-2" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <InputText type="password" @bind-Value="registerModel.ConfirmPassword" class="mt-1 w-full rounded-lg border border-gray-300 p-2" />
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Gender</label>
+                        <InputSelect @bind-Value="registerModel.Gender" class="mt-1 w-full rounded-lg border border-gray-300 p-2">
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </InputSelect>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Role</label>
+                        <InputSelect @bind-Value="registerModel.Role" class="mt-1 w-full rounded-lg border border-gray-300 p-2">
+                            <option value="">Select role</option>
+                            <option value="buyer">Buyer</option>
+                            <option value="seller">Seller</option>
+                        </InputSelect>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white rounded-lg py-2 hover:bg-blue-700">
+                        Sign Up
+                    </button>
+
+                    <div class="mt-4 flex justify-center space-x-4">
+                        <button class="flex items-center px-4 py-2 border border-gray-300 rounded-lg">
+                            <i class="bi bi-apple mr-2"></i>
+                            Apple
+                        </button>
+                        <button class="flex items-center px-4 py-2 border border-gray-300 rounded-lg">
+                            <i class="bi bi-google mr-2"></i>
+                            Google
+                        </button>
+                    </div>
+
+                    <p class="text-center text-sm text-gray-600 mt-4">
+                        Already have an account?
+                        <a href="/login" class="text-blue-600 hover:underline">Sign in</a>
+                    </p>
+                </div>
+            </EditForm>
+        </div>
+
+        <!-- Sağ taraf - Görsel -->
+        <div class="flex-1 pl-8">
+            <img src="/register.jpeg" alt="Team working" class="w-full h-full object-cover rounded-lg" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+
+    private async Task HandleRegistration()
+    {
+        if (registerModel.Password != registerModel.ConfirmPassword)
+        {
+            // Şifre eşleşmiyor hatası
+            return;
+        }
+
+        // Kayıt işlemleri burada yapılacak
+        Navigation.NavigateTo("/login");
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+        public string Password { get; set; }
+
+        [Required(ErrorMessage = "Confirm password is required")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match")]
+        public string ConfirmPassword { get; set; }
+
+        [Required(ErrorMessage = "Gender is required")]
+        public string Gender { get; set; }
+
+        [Required(ErrorMessage = "Role is required")]
+        public string Role { get; set; }
+    }
+}

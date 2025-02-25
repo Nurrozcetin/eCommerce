@@ -1,0 +1,33 @@
+﻿@page "/login"
+@layout Commerce.Components.Layout.EmptyLayout
+@inject NavigationManager Navigation
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center">Login</h3>
+                    <form>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" />
+                        </div>
+                        <button class="btn btn-primary w-100" @onclick="OnLoginCompleted">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void OnLoginCompleted()
+    {
+        Navigation.NavigateTo("/home", true);
+    }
+}

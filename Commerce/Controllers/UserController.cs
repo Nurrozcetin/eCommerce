@@ -34,19 +34,23 @@ namespace Commerce.Controllers
                 }
 
                 var result = await _userService.RegisterAsync(
+                     registerDto.Id,
                      registerDto.Email,
                      registerDto.Password,
                      registerDto.GenderId,
                      registerDto.RoleId
                 );
 
-                if (result == "Kullanıcı başarıyla oluşturuldu!")
-                    return Ok("Kullanıcı başarıyla kaydedildi.");
+                if (result != null)
+                {
+                    return Ok(result); // Başarıyla kullanıcı kaydedildi ve AuthResponseDto döndü
+                }
+
                 return BadRequest("Kullanıcı kaydedilemedi.");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message); //sunucu kaynakli hata
+                return StatusCode(500, ex.Message); // Sunucu kaynaklı hata
             }
         }
 
@@ -67,7 +71,7 @@ namespace Commerce.Controllers
                     return Unauthorized("Invalid credentials.");
                 }
 
-                var token = _tokenService.GenerateToken(user.Email);
+                var token = _tokenService.GenerateToken(user.Id);
 
                 return Ok(new { Token = token });
             }
@@ -81,10 +85,9 @@ namespace Commerce.Controllers
         [HttpGet("profile")]
         public IActionResult GetUserProfile()
         {
-            var userEmail = User.FindFirstValue(ClaimTypes.Email);
-            return Ok(new { UserEmail = userEmail });
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return Ok(new { UserEmail = userId });
         }
-
 
         [Authorize]
         [HttpGet("user")]
@@ -92,12 +95,14 @@ namespace Commerce.Controllers
         {
             try
             {
-                var userEmail = User.FindFirstValue(ClaimTypes.Email);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                if (string.IsNullOrEmpty(userEmail))
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
                     return Unauthorized("Kullanıcı doğrulanamadı.");
+                }
 
-                var user = await _userService.GetUserByEmailAsync(userEmail);
+                var user = await _userService.GetUserByIdAsync(parsedUserId);
 
                 var userProfile = new ProfileDto
                 {

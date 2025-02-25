@@ -13,13 +13,13 @@ namespace Commerce.BusinessLayer
         {
             _context = context;
         }
-        public async Task AddProductToCartAsync(string email, int productId, int quantity)
+        public async Task AddProductToCartAsync(int userId, int productId, int quantity)
         {
             // Kullanıcıyı bul
             var user = await _context.Users
                 .Include(u => u.Cart)
                     .ThenInclude(c => c.ProductCart)
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new Exception("Kullanıcı bulunamadı");
@@ -53,14 +53,14 @@ namespace Commerce.BusinessLayer
 
             await _context.SaveChangesAsync();
         }
-        public async Task<List<Product>> GetCartProductsAsync(string email)
+        public async Task<List<Product>> GetCartProductsAsync(int userId)
         {
             //Sepetine erisilecek kullaniciyi bul 
             var user = await _context.Users
              .Include(userInfo => userInfo.Cart)
                  .ThenInclude(cart => cart.ProductCart)
                      .ThenInclude(productCart => productCart.Product)
-             .FirstOrDefaultAsync(userInfo => userInfo.Email == email);
+             .FirstOrDefaultAsync(userInfo => userInfo.Id == userId);
 
             if (user == null || user.Cart == null || user.Cart.ProductCart == null)
                 throw new Exception("Kullanıcıya ait ürün bulunamadı");
@@ -71,13 +71,13 @@ namespace Commerce.BusinessLayer
                 .OrderByDescending(productCart => productCart.CreatedAt) // En yeniden en eskiye tarihe gore sirala 
                 .ToList();
         }
-        public async Task DeleteProductCartAsync(string email, int productId)
+        public async Task DeleteProductCartAsync(int userId, int productId)
         {
             //Sepetine erisilecek kullaniciyi bul 
             var user = await _context.Users
                 .Include(userInfo => userInfo.Cart)
                     .ThenInclude(cart => cart.ProductCart)
-                .FirstOrDefaultAsync(u => u.Email == email);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null || user.Cart == null || user.Cart.ProductCart == null)
             {
